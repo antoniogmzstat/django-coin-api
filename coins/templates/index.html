@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+
+    <title>Coin Api</title>
+</head>
+<body>
+    <nav>
+        <ul>
+          <li><strong>Django Coin Api</strong></li>
+        </ul>
+        <ul>
+          <li><a href="/api/v.1.0/">Coin List</a></li>
+          <li><a href="/api/v.1.0/dashboard">Dashboard</a></li>
+          
+        </ul>
+    </nav>
+
+    <main class="container">
+        <article>
+            <header>Coin List</header>
+            <table id="coin-table">
+                <thead>
+                    <tr>
+                      <th scope="col">Name</th>
+                      <th scope="col">Symbol</th>
+                      <th scope="col">Logo</th>
+                    </tr>
+                </thead>
+                <tbody>
+        
+                </tbody>
+            </table>
+        </article>
+
+    </main>
+
+</body>
+<script>
+    const fetchCoinGecko = () => {
+        return fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc")
+        .then(res => res.json())
+        .catch(info => console.log(info.message))
+    }
+    // const prueba = [{"name": "Bitcoin", "symbol": "BTC"}, {"name": "Ethereum", "symbol": "ETH"}]
+    const fetchInfo = () => {
+        return fetch("/api/v.1.0/coins/")
+        .then(res => res.json())
+        .catch(info=> console.log(info.message))
+    }
+    const boton = document.querySelector("#button")
+    // boton.addEventListener('click', async (e) => {
+    //     e.preventDefault()
+    //     const response = await fetchInfo()
+
+    //     console.log(response)
+    // })
+    let coins = []
+    window.addEventListener('DOMContentLoaded', async () => {
+        
+        const response = await fetchInfo()
+
+        coins = response
+        // renderCoins(coins)
+        const coingeck = await fetchCoinGecko()
+        const coinImages = []
+        coins.forEach((coin_prueba) => {
+            result_match = {"name": coin_prueba["name"], "symbol": coin_prueba["symbol"], "image": ""}
+            coingeck.forEach((coin_gecko) => {
+                
+                if(coin_gecko["symbol"].toUpperCase() === coin_prueba["symbol"]){
+                    result_match["image"] = coin_gecko["image"]
+                    
+                }
+            })
+            coinImages.push(result_match)
+
+            
+
+        })
+        console.log(coinImages)
+        renderCoins(coinImages)
+    })
+    const renderCoins = (coins) => {
+        const coinList = document.querySelector('#coin-table > tbody')
+        coinList.innerHTML = ''
+
+        coins.forEach(coin => {
+            const coinItem = document.createElement('tr')
+            coinItem.innerHTML = `
+                <td>${coin.name}</td>
+                <td>${coin.symbol}</td>
+                <td><img src="${coin.image}" width="20" height="20"></td>
+            `
+            coinList.append(coinItem)
+        });
+        
+    }
+
+    
+</script>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Coin Api</title>
+</head>
+<body>
+    <nav>
+        <ul>
+          <li><strong>Django Coin Api</strong></li>
+        </ul>
+        <ul>
+          <li><a href="/api/v.1.0/">Coin List</a></li>
+          <li><a href="/api/v.1.0/dashboard">Dashboard</a></li>
+          
+        </ul>
+    </nav>
+
+    <main class="container">
+        <div id="configuration">
+            <div class="grid">
+                <div>
+                    <label>Coin</label>
+                    <select id="coinSelect" required>
+                    </select>
+                </div>
+                <div>
+                    <label>Date Type</label>
+                    <select id="dateTypeSelect" required>
+                        <option value="puntual">Puntual</option>
+                        <option value="range">Range</option>
+                    </select>
+                </div>
+    
+            </div>
+            <div class="grid">
+                <div>
+                    <label>Start Date
+                    <input type="date" id="start-date">
+                    </label>
+                </div>
+                <div>
+                    <label>End Date
+                    <input type="date" id="end-date">
+                    </label>
+                </div>
+    
+            </div>
+        </div>
+        <div class="grid">
+            <div>
+                <article>
+                    
+                    <h5>Close Price</h5>
+                    <p id="coin-close"></p>
+                
+                </article>
+                
+            </div>
+
+            <div>
+                <article>
+                    <h5>Sell Best Close Price</h5>
+                    <p id="max-coin-close"></p>
+                
+                </article>
+            </div>
+
+            <div>
+                <article>
+                    <h5>Buy Best Close Price</h5>
+                    <p id="min-coin-close"></p>
+                
+                </article>
+            </div>
+        </div>
+        <div class="grid">
+            <div id="canvas">
+                <canvas id="myChart"></canvas>
+            </div>
+        </div>
+    </main>
+
+
+
+
+</body>
+<script>
+    
+    const fetchInfo = () => {
+        return fetch("/api/v.1.0/coins/")
+        .then(res => res.json())
+        .catch(info=> console.log(info.message))
+    }
+
+    const fetchCoinClose = (coin, startDate) => {
+        return fetch(`/api/v.1.0/coins/close/${coin}/${startDate}/`)
+        .then(res => res.json())
+        .catch(info=> console.log(info.message))
+    }
+
+    const fetchCoinProfit = (coin, startDate, endDate) => {
+        return fetch(`/api/v.1.0/coins/profit/${coin}/${startDate}/${endDate}`)
+        .then(res => res.json())
+        .catch(info=> console.log(info.message))
+    }
+    const renderCoinsOption = (coins) => {
+        const coinSelect = document.querySelector("#coinSelect")
+
+        coins.forEach(coin => {
+            const coinOption = document.createElement('option')
+            coinOption.value = coin.name
+            coinOption.innerHTML = coin.name
+            coinSelect.append(coinOption)
+        });
+        
+    }
+
+    const renderResult = async () => {
+        
+        const dateTypeSelect = document.querySelector('#dateTypeSelect')
+        const endDate = document.querySelector('#end-date')
+        const startDate = document.querySelector('#start-date')
+        const coinClose = document.querySelector('#coin-close')
+        const maxCoinClose = document.querySelector('#max-coin-close')
+        const minCoinClose = document.querySelector('#min-coin-close')
+        const divChart = document.querySelector('#canvas')
+
+        const coinName = coinSelect.value
+        const startDateValue = startDate.value.replaceAll("-", "")
+        const endDateValue = endDate.value.replaceAll("-", "")
+        
+        if(dateTypeSelect.value === 'puntual'){
+            endDate.setAttribute("hidden", true)
+            maxCoinClose.setAttribute("hidden", true)
+            minCoinClose.setAttribute("hidden", true)
+            divChart.setAttribute("hidden", true)
+            coinClose.removeAttribute("hidden")
+            const coinCloseResult = await fetchCoinClose(coinName, startDateValue)
+            coinClose.innerText = parseFloat(coinCloseResult[0]["Close"]).toFixed(4)
+        }else{
+            coinClose.setAttribute("hidden", true)
+            endDate.removeAttribute("hidden")
+            maxCoinClose.removeAttribute("hidden")
+            minCoinClose.removeAttribute("hidden")
+            divChart.removeAttribute("hidden")
+            const coinProfit = await fetchCoinProfit(coinName, startDateValue, endDateValue)
+            maxCoinClose.innerText = parseFloat(coinProfit["max"]["Close"]).toFixed(4)
+            minCoinClose.innerText = parseFloat(coinProfit["min"]["Close"]).toFixed(4)
+            const labels = []
+            const dataPlot = []
+            coinProfit.data.forEach((day) => {
+                labels.push(day["Date"].split("T")[0])
+                dataPlot.push(day["Close"])
+            })
+            console.log(dataPlot)
+            const data = {
+                    labels: labels,
+                    datasets: [{
+                    label: `${coinName}`,
+                    backgroundColor: 'rgb(255, 99, 132)',
+                    borderColor: 'rgb(255, 99, 132)',
+                    data: dataPlot,
+                    fill: false,
+                    tensor: 0.1
+                    }]
+            };
+
+            const config = {
+                type: 'line',
+                data: data,
+                options: {}
+            };
+            
+            
+            divChart.removeChild(document.getElementById('myChart'))
+            const newCanvas = document.createElement("canvas")
+            newCanvas.setAttribute("id", "myChart")
+            divChart.append(newCanvas)
+
+            let myChart = new Chart(
+                document.getElementById('myChart'),
+                config
+            );
+            // console.log(dataPlot)
+        }
+    }
+    
+
+    let coins = []
+    window.addEventListener('DOMContentLoaded', async () => {
+        
+        const response = await fetchInfo()
+
+        coins = response
+        renderCoinsOption(coins)
+        
+        renderResult()
+        
+    })
+    
+    
+    const configuration = document.querySelector('#configuration')
+
+    configuration.addEventListener('change', async () => {
+        
+        renderResult()
+    })
+
+
+</script>
+</html>
