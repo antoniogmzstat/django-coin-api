@@ -38,14 +38,21 @@ python manage.py makemigrations coins
 python manage.py migrate
 ```
 
-7. Copy csv files with data into folder "data"
+7. Create folder with name: "data" in path django-coin-api/scripts and copy csv files with data into the new folder "data"
+
+django-coin-api/scripts
+- load.py
+- data:
+    * coin_Aave.csv
+    * etc.
+
 
 8. Create table into SQLite
 ```bash
 python manage.py runscript load
 ```
 
-9. Up Server
+9. Set Up Server
 ```bash
 python manage.py runserver
 ```
