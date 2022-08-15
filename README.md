@@ -8,22 +8,28 @@ Rest ful API with Django
 git clone https://github.com/antoniogmzstat/django-coin-api.git
 ```
 
-2. Create virtual env for install packages
+2. Situate into project folder
+
+```bash
+cd ./django-coin-api/
+```
+
+3. Create virtual env for install packages
 ```bash
 python -m virtualenv venv
 ```
 
-3. Activate virtual env
+4. Activate virtual env
 ```bash
 source ./venv/bin/activate
 ```
 
-4. Install list of packages from file requeriments.txt
+5. Install list of packages from file requeriments.txt
 ```bash
 pip install -r requirements.txt
 ```
 
-5. Make migrations for the application
+6. Make migrations for the application
 
 ```bash
 python manage.py makemigrations coins
@@ -32,16 +38,16 @@ python manage.py makemigrations coins
 python manage.py migrate
 ```
 
-6. Copy csv files with data into folder "data"
+7. Copy csv files with data into folder "data"
 
-7. Create table into SQLite
+8. Create table into SQLite
 ```bash
 python manage.py runscript load
 ```
 
-8. Up Server
+9. Up Server
 ```bash
 python manage.py runserver
 ```
 
-9. Access to http://127.0.0.1:8000/api/v.1.0/
+10. Access to http://127.0.0.1:8000/api/v.1.0/
