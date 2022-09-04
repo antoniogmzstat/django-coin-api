@@ -62,18 +62,28 @@
                 
             </div>
 
-            <div>
-                <article>
-                    <h5>Sell Best Close Price</h5>
-                    <p id="max-coin-close"></p>
-                
-                </article>
-            </div>
+
 
             <div>
                 <article>
-                    <h5>Buy Best Close Price</h5>
+                    <h5>Best moment to buy</h5>
                     <p id="min-coin-close"></p>
+                    <p id="day-buy-coin-close"></p>
+                
+                </article>
+            </div>
+            <div>
+                <article>
+                    <h5>Best moment to sell</h5>
+                    <p id="max-coin-close"></p>
+                    <p id="day-sell-coin-close"></p>
+                
+                </article>
+            </div>
+            <div>
+                <article>
+                    <h5>Profit</h5>
+                    <p id="profit"></p>
                 
                 </article>
             </div>
@@ -128,6 +138,9 @@
         const coinClose = document.querySelector('#coin-close')
         const maxCoinClose = document.querySelector('#max-coin-close')
         const minCoinClose = document.querySelector('#min-coin-close')
+        const profit = document.querySelector('#profit')
+        const dayBuy = document.querySelector('#day-buy-coin-close')
+        const daySell = document.querySelector('#day-sell-coin-close')
         const divChart = document.querySelector('#canvas')
 
         const coinName = coinSelect.value
@@ -138,6 +151,9 @@
             endDate.setAttribute("hidden", true)
             maxCoinClose.setAttribute("hidden", true)
             minCoinClose.setAttribute("hidden", true)
+            profit.setAttribute("hidden", true)
+            dayBuy.setAttribute("hidden", true)
+            daySell.setAttribute("hidden", true)
             divChart.setAttribute("hidden", true)
             coinClose.removeAttribute("hidden")
             const coinCloseResult = await fetchCoinClose(coinName, startDateValue)
@@ -147,10 +163,16 @@
             endDate.removeAttribute("hidden")
             maxCoinClose.removeAttribute("hidden")
             minCoinClose.removeAttribute("hidden")
+            profit.removeAttribute("hidden")
+            dayBuy.removeAttribute("hidden")
+            daySell.removeAttribute("hidden")
             divChart.removeAttribute("hidden")
             const coinProfit = await fetchCoinProfit(coinName, startDateValue, endDateValue)
-            maxCoinClose.innerText = parseFloat(coinProfit["max"]["Close"]).toFixed(4)
-            minCoinClose.innerText = parseFloat(coinProfit["min"]["Close"]).toFixed(4)
+            maxCoinClose.innerText = "Close price: " + parseFloat(coinProfit["profit"]["sell_close"]).toFixed(3)
+            minCoinClose.innerText = "Close price: " + parseFloat(coinProfit["profit"]["buy_close"]).toFixed(3)
+            profit.innerText = parseFloat(coinProfit["profit"]["sell_profit"]).toFixed(2)+" %"
+            dayBuy.innerText = "Day: " + coinProfit["profit"]["buy_day"].split("T")[0]
+            daySell.innerText = "Day: " + coinProfit["profit"]["sell_day"].split("T")[0]
             const labels = []
             const dataPlot = []
             coinProfit.data.forEach((day) => {

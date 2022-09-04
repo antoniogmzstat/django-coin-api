@@ -46,9 +46,23 @@ def get_coin_profit(request, name, start_date, end_date):
 
     coin_interval = Coin.objects.filter(Name=name, Date__range=[start_date_filter, end_date_filter]).values()
     list_dict_coins = [coin for coin in coin_interval]
-    
-    dict_coin_max = max(list_dict_coins, key=lambda x:x['Close'])
-    dict_coin_min = min(list_dict_coins, key=lambda x:x['Close'])    
-    
-    return Response({"max":dict_coin_max, "min": dict_coin_min, "data":list_dict_coins})
+
+    list_profits = []
+    for dict_coin in list_dict_coins:
+        buy_day =  dict_coin["Date"]
+        buy_close = dict_coin["Close"]
+        sell_dates = list(filter(lambda sell_date: sell_date["Date"]>buy_day, list_dict_coins))
+        
+        for sell_date in sell_dates:
+            sell_day = sell_date["Date"]
+            sell_close = sell_date["Close"]
+            sell_profit = ((sell_close - buy_close)/buy_close)*100
+            dict_sell = {"buy_day": buy_day, "buy_close": buy_close, 
+                         "sell_day": sell_day, "sell_close": sell_close, 
+                         "sell_profit": sell_profit}
+            list_profits.append(dict_sell)
+        
+    dict_max_profit = max(list_profits, key=lambda x:x['sell_profit'], default=0)
+        
+    return Response({"profit": dict_max_profit, "data":list_dict_coins})
     
